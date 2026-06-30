@@ -34,14 +34,28 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install pyinstaller
           
-          # 如果是 macOS，我們強制精確安裝支援雙架構的 Pillow 版本
+          # ✨ macOS 專屬：下載並強制覆蓋最新版、最完整的 Universal2 Pillow 
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            # platform 指定 macosx_10_10_universal2 確保下載到 Fat Binary
-            pip install --upgrade --only-binary=:all: --platform macosx_10_10_universal2 Pillow
+            echo "[*] 正在為 macOS 下載現代通用架構的 Pillow..."
+            mkdir -p temp_wheel
+            
+            # 🟢 修正：將平台的 SDK 標籤改為 10_13，這樣就能完美通吃最新版 Pillow
+            pip download --only-binary=:all: --platform macosx_10_13_universal2 --dest temp_wheel Pillow
+            
+            # 解壓縮所有的 .whl（這會包含 _imaging.so, _avif.so 等所有通用擴充檔）
+            WHEEL_FILE=$(ls temp_wheel/Pillow-*.whl)
+            SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
+            unzip -o "$WHEEL_FILE" -d "$SITE_PACKAGES"
+            rm -rf temp_wheel
+            
+            # 最後安裝 pyautogui，此時它會直接認到環境中已就位的 Universal2 Pillow
+            pip install pyautogui
+          else
+            # Windows 與 Linux 維持原樣
+            pip install pyautogui
           fi
-          
-          pip install pyautogui pyinstaller
         shell: bash
 
       - name: Install Linux GUI dependencies
