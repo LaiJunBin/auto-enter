@@ -30,12 +30,27 @@ if (finalRepo.startsWith("__") || finalVersion.startsWith("__")) {
 }
 
 // 2. 判斷作業系統
+// 2. 判斷作業系統與 CPU 架構
 let binaryName = '';
-if (process.platform === 'win32') binaryName = 'auto-enter-win.exe';
-else if (process.platform === 'darwin') binaryName = 'auto-enter-mac';
-else if (process.platform === 'linux') binaryName = 'auto-enter-linux';
-else {
-    console.error("【錯誤】不支援的作業系統。");
+const platform = process.platform;
+const arch = process.arch; // ✨ 核心：獲取當前硬體架構 ('arm64' 或 'x64')
+
+if (platform === 'win32') {
+    binaryName = 'auto-enter-win.exe';
+} else if (platform === 'linux') {
+    binaryName = 'auto-enter-linux';
+} else if (platform === 'darwin') {
+    // 🍏 macOS 專屬：根據 CPU 架構動態分流下載不同的執行檔
+    if (arch === 'arm64') {
+        binaryName = 'auto-enter-mac-arm64'; // M1/M2/M3/M4 系列 Mac
+    } else if (arch === 'x64') {
+        binaryName = 'auto-enter-mac-x64';   // Intel 晶片 Mac
+    } else {
+        console.error(`【錯誤】不支援的 Mac 架構: ${arch}`);
+        process.exit(1);
+    }
+} else {
+    console.error(`【錯誤】不支援的作業系統: ${platform}`);
     process.exit(1);
 }
 
