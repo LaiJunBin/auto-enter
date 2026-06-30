@@ -15,12 +15,20 @@ jobs:
           - os: windows-latest
             artifact_name: auto-enter-win.exe
             asset_name: auto-enter-win.exe
-          - os: macos-latest
-            artifact_name: auto-enter-mac
-            asset_name: auto-enter-mac
           - os: ubuntu-latest
             artifact_name: auto-enter-linux
             asset_name: auto-enter-linux
+            
+          # 🍏 Mac 陣營拆分為二：
+          # 1. 專門給 Apple Silicon (M系列晶片) 的編譯環境
+          - os: macos-latest # 目前預設為 M 系列 arm64 Runner
+            artifact_name: auto-enter-mac-arm64
+            asset_name: auto-enter-mac-arm64
+            
+          # 2. 專門給舊款 Intel Mac 的編譯環境
+          - os: macos-13 # 強制指定 Intel 晶片的 macOS 13 Runner
+            artifact_name: auto-enter-mac-x64
+            asset_name: auto-enter-mac-x64
 
     steps:
       - name: Checkout code
@@ -33,24 +41,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # 🟢 確保使用當前環境的 pip
           python -m pip install --upgrade pip
-          python -m pip install pyinstaller
-          
-          if [ "${{ matrix.os }}" == "macos-latest" ]; then
-            echo "[*] 正在為 macOS 下載現代通用架構的 Pillow..."
-            mkdir -p temp_wheel
-            python -m pip download --only-binary=:all: --platform macosx_10_13_universal2 --dest temp_wheel Pillow
-            
-            WHEEL_FILE=$(ls temp_wheel/Pillow-*.whl)
-            SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
-            unzip -o "$WHEEL_FILE" -d "$SITE_PACKAGES"
-            rm -rf temp_wheel
-            
-            python -m pip install pyautogui
-          else
-            python -m pip install pyautogui
-          fi
+          python -m pip install pyautogui pyinstaller
         shell: bash
 
       - name: Install Linux GUI dependencies
@@ -61,13 +53,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          if [ "${{ matrix.os }}" != "macos-latest" ]; then
-            # 🟢 Windows 和 Linux 也同步改成 python -m 啟動，確保環境一致
-            python -m PyInstaller --onefile --name=${{ matrix.artifact_name }} timer_enter.py
-          else
-            # ✨ macOS 專屬：用確定的 Python 執行 PyInstaller，強制打包雙架構
-            python -m PyInstaller --onefile --name=${{ matrix.artifact_name }} --target-arch=universal2 timer_enter.py
-          fi
+          python -m PyInstaller --onefile --name=${{ matrix.artifact_name }} timer_enter.py
         shell: bash
 
       - name: Upload Artifact
