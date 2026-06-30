@@ -107,4 +107,4 @@ jobs:
 
       # 透過 Trusted Publishing 憑證推上 NPM
       - name: Publish Package to NPM
-        run: npm publish --provenance
+        run: npm publish
