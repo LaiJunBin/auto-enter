@@ -25,8 +25,9 @@ jobs:
             artifact_name: auto-enter-mac-arm64
             asset_name: auto-enter-mac-arm64
             
-          # 2. 專門給舊款 Intel Mac 的編譯環境
-          - os: macos-13 # 強制指定 Intel 晶片的 macOS 13 Runner
+          # 2. 專門給舊款 Intel Mac 的編譯環境 (x64)
+          # 🟢 修正：精確使用官方最新的 macos-15-intel 標籤
+          - os: macos-15-intel 
             artifact_name: auto-enter-mac-x64
             asset_name: auto-enter-mac-x64
 
