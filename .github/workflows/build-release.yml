@@ -80,7 +80,8 @@ jobs:
         with:
           files: |
             artifacts/auto-enter-win.exe/auto-enter-win.exe
-            artifacts/auto-enter-mac/auto-enter-mac
+            artifacts/auto-enter-mac-arm64/auto-enter-mac-arm64
+            artifacts/auto-enter-mac-x64/auto-enter-mac-x64
             artifacts/auto-enter-linux/auto-enter-linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
