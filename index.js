@@ -18,15 +18,13 @@ const args = process.argv.slice(2);
 let finalRepo = REPO;
 let finalVersion = VERSION;
 
-if (REPO === "__GITHUB_REPO__" || VERSION === "__RELEASE_VERSION__") {
+if (finalRepo.startsWith("__") || finalVersion.startsWith("__")) {
     try {
         const pkg = require('./package.json');
-        // 預設你的 GitHub 帳號，或者從 repository 欄位解析
-        finalRepo = pkg.repository ? pkg.repository.replace('github:', '') : "lai.junbin/auto-enter";
+        finalRepo = pkg.repository ? pkg.repository.url.replace('git+https://github.com/', '').replace('.git', '') : "LaiJunBin/auto-enter";
         finalVersion = `v${pkg.version}`;
     } catch (e) {
-        // 如果連 package.json 也沒有，給予預設開發提示
-        finalRepo = "lai.junbin/auto-enter";
+        finalRepo = "LaiJunBin/auto-enter";
         finalVersion = "v1.0.0";
     }
 }
