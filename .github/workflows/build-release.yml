@@ -89,7 +89,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24' # 順應最新 Runner 規範，直接用 Node 24
-          registry-url: 'https://registry.npmjs.org'
 
       # 同步 package.json 版號 (在此觸發條件下，github.ref_name 就是 v1.0.x)
       - name: Sync package.json version with Git Tag
@@ -107,4 +106,4 @@ jobs:
 
       # 透過 Trusted Publishing 憑證推上 NPM
       - name: Publish Package to NPM
-        run: npm publish
+        run: npm publish --provenance
