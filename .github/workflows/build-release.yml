@@ -33,28 +33,23 @@ jobs:
 
       - name: Install dependencies
         run: |
+          # 🟢 確保使用當前環境的 pip
           python -m pip install --upgrade pip
-          pip install pyinstaller
+          python -m pip install pyinstaller
           
-          # ✨ macOS 專屬：下載並強制覆蓋最新版、最完整的 Universal2 Pillow 
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             echo "[*] 正在為 macOS 下載現代通用架構的 Pillow..."
             mkdir -p temp_wheel
+            python -m pip download --only-binary=:all: --platform macosx_10_13_universal2 --dest temp_wheel Pillow
             
-            # 🟢 修正：將平台的 SDK 標籤改為 10_13，這樣就能完美通吃最新版 Pillow
-            pip download --only-binary=:all: --platform macosx_10_13_universal2 --dest temp_wheel Pillow
-            
-            # 解壓縮所有的 .whl（這會包含 _imaging.so, _avif.so 等所有通用擴充檔）
             WHEEL_FILE=$(ls temp_wheel/Pillow-*.whl)
             SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
             unzip -o "$WHEEL_FILE" -d "$SITE_PACKAGES"
             rm -rf temp_wheel
             
-            # 最後安裝 pyautogui，此時它會直接認到環境中已就位的 Universal2 Pillow
-            pip install pyautogui
+            python -m pip install pyautogui
           else
-            # Windows 與 Linux 維持原樣
-            pip install pyautogui
+            python -m pip install pyautogui
           fi
         shell: bash
 
@@ -66,12 +61,12 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          # 如果是 Windows 或 Linux，維持原本的指令
           if [ "${{ matrix.os }}" != "macos-latest" ]; then
-            pyinstaller --onefile --name=${{ matrix.artifact_name }} timer_enter.py
+            # 🟢 Windows 和 Linux 也同步改成 python -m 啟動，確保環境一致
+            python -m PyInstaller --onefile --name=${{ matrix.artifact_name }} timer_enter.py
           else
-            # ✨ macOS 專屬：強制 PyInstaller 打包 universal2 雙架構二進位檔
-            pyinstaller --onefile --name=${{ matrix.artifact_name }} --target-arch=universal2 timer_enter.py
+            # ✨ macOS 專屬：用確定的 Python 執行 PyInstaller，強制打包雙架構
+            python -m PyInstaller --onefile --name=${{ matrix.artifact_name }} --target-arch=universal2 timer_enter.py
           fi
         shell: bash
 
