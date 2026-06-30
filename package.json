@@ -7,6 +7,10 @@
   "bin": {
     "auto-enter": "./index.js"
   },
+  "files": [
+    "index.js",
+    "README.md"
+  ],
   "keywords": ["cli", "automation", "enter", "ai-agent", "cooldown"],
   "author": "lai.junbin",
   "license": "MIT"
