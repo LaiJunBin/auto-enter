@@ -5,13 +5,19 @@
   "description": "A lightweight CLI tool to simulate an Enter keypress after a specific time or delay, perfect for automated AI agent sessions.",
   "main": "index.js",
   "bin": {
-    "auto-enter": "./index.js"
+    "auto-enter": "index.js"
   },
   "files": [
     "index.js",
     "README.md"
   ],
-  "keywords": ["cli", "automation", "enter", "ai-agent", "cooldown"],
+  "keywords": [
+    "cli",
+    "automation",
+    "enter",
+    "ai-agent",
+    "cooldown"
+  ],
   "author": "lai.junbin",
   "license": "MIT"
 }
