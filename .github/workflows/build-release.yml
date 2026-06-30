@@ -73,3 +73,38 @@ jobs:
             artifacts/auto-enter-linux/auto-enter-linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-npm:
+    name: Publish to NPM
+    needs: release # ✨ 關鍵：確保 release 成功建立、二進位檔掛上去後才執行
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24' # 順應最新 Runner 規範，直接用 Node 24
+          registry-url: 'https://registry.npmjs.org'
+
+      # 同步 package.json 版號 (在此觸發條件下，github.ref_name 就是 v1.0.x)
+      - name: Sync package.json version with Git Tag
+        run: |
+          npm version ${{ github.ref_name }} --no-git-tag-version
+          echo "[*] package.json 版號已同步為: ${{ github.ref_name }}"
+
+      # 動態將 Repo 與 Tag 版本注入 index.js
+      - name: Inject Repo and Version into index.js
+        run: |
+          sed -i 's|__GITHUB_REPO__|${{ github.repository }}|g' index.js
+          sed -i 's|__RELEASE_VERSION__|${{ github.ref_name }}|g' index.js
+          echo "[*] 已將 index.js 中的 Repo 替換為: ${{ github.repository }}"
+          echo "[*] 已將 index.js 中的 Version 替換為: ${{ github.ref_name }}"
+
+      # 透過 Trusted Publishing 憑證推上 NPM
+      - name: Publish Package to NPM
+        run: npm publish --provenance
