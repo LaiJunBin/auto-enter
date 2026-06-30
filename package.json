@@ -1,0 +1,13 @@
+{
+  "name": "auto-enter",
+  "version": "1.0.0",
+  "_comment_version": "注意：此處的版號僅為預留佔位符，CI/CD 部署時會自動被 GitHub Actions 的 Git Tag 覆蓋",
+  "description": "A lightweight CLI tool to simulate an Enter keypress after a specific time or delay, perfect for automated AI agent sessions.",
+  "main": "index.js",
+  "bin": {
+    "auto-enter": "./index.js"
+  },
+  "keywords": ["cli", "automation", "enter", "ai-agent", "cooldown"],
+  "author": "lai.junbin",
+  "license": "MIT"
+}

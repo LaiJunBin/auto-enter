@@ -1,0 +1,40 @@
+name: Publish Package to NPM
+
+on:
+  release:
+    types: [published] # 當上面的 Release 成功發布時自動觸發
+
+jobs:
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      # 同步 package.json 的版號（此處 github.ref_name 會是觸發該 Release 的 Tag 名稱）
+      # 如果在 release 事件中，github.ref_name 沒拿到，可以使用 ${{ github.event.release.tag_name }}
+      - name: Sync package.json version with Git Tag
+        run: |
+          npm version ${{ github.event.release.tag_name }} --no-git-tag-version
+          echo "[*] package.json 版號已同步為: ${{ github.event.release.tag_name }}"
+
+      # 動態將 Repo 與 Tag 版本注入 index.js
+      - name: Inject Repo and Version into index.js
+        run: |
+          sed -i 's|__GITHUB_REPO__|${{ github.repository }}|g' index.js
+          sed -i 's|__RELEASE_VERSION__|${{ github.event.release.tag_name }}|g' index.js
+          echo "[*] 已將 index.js 中的 Repo 替換為: ${{ github.repository }}"
+          echo "[*] 已將 index.js 中的 Version 替換為: ${{ github.event.release.tag_name }}"
+
+      - name: Publish Package to NPM
+        run: npm publish --provenance
