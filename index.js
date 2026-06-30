@@ -8,7 +8,7 @@ const https = require('https');
 // =================================================================
 // 佔位符：這些欄位會在 GitHub Actions CI/CD 流程中被動態替換
 // =================================================================
-const REPO = "__GITHUB_REPO__";       
+const REPO = "__GITHUB_REPO__";      
 const VERSION = "__RELEASE_VERSION__"; 
 // =================================================================
 
@@ -57,15 +57,17 @@ function downloadBinary(url, dest, callback) {
         }
         if (res.statusCode !== 200) {
             console.error(`【錯誤】無法從 GitHub Release 下載執行引擎 (Status: ${res.statusCode})`);
-            console.error(`[網址]: ${url}`);
             process.exit(1);
         }
+
         const file = fs.createWriteStream(dest);
         res.pipe(file);
-        file.on('finish', () => {
-            file.close();
+
+        // ❌ 原本是 file.on('finish', ...)
+        // 🟢 改用 file.on('close', ...) 確保 Windows 核心完全釋放檔案鎖
+        file.on('close', () => {
             if (process.platform !== 'win32') {
-                fs.chmodSync(dest, '755'); // 賦予 Mac/Linux 執行權限
+                fs.chmodSync(dest, '755');
             }
             callback();
         });
