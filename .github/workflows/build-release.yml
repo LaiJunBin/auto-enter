@@ -34,7 +34,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyautogui pyinstaller
+          # 確保安裝最新支援雙架構的模組
+          pip install --upgrade pyautogui pyinstaller
 
       - name: Install Linux GUI dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -44,7 +45,14 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          pyinstaller --onefile --name=${{ matrix.artifact_name }} timer_enter.py
+          # 如果是 Windows 或 Linux，維持原本的指令
+          if [ "${{ matrix.os }}" != "macos-latest" ]; then
+            pyinstaller --onefile --name=${{ matrix.artifact_name }} timer_enter.py
+          else
+            # ✨ macOS 專屬：強制 PyInstaller 打包 universal2 雙架構二進位檔
+            pyinstaller --onefile --name=${{ matrix.artifact_name }} --target-arch=universal2 timer_enter.py
+          fi
+        shell: bash
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
